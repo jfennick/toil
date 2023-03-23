@@ -1,0 +1,9 @@
+name: toil
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+# pypy is ~2X faster than the regular python interpreter.
+  - pypy

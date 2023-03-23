@@ -1,0 +1,53 @@
+name: Install
+
+on:
+  push:
+  pull_request: 
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  install:
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.os }}-${{ github.ref }}
+      cancel-in-progress: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Setup mamba (linux, macos)
+        if: runner.os != 'Windows'
+        uses: conda-incubator/setup-miniconda@v2.2.0
+        with:
+          miniforge-variant: Mambaforge-pypy3
+          miniforge-version: latest
+          environment-file: pypy.yml
+          activate-environment: toil
+          use-mamba: true
+          channels: conda-forge
+          python-version: "3.9.*" # pypy is not yet compatible with 3.10 and 3.11
+
+      - name: Setup conda (windows)
+        if: runner.os == 'Windows'
+        uses: conda-incubator/setup-miniconda@v2.2.0
+        with:
+          miniforge-version: latest
+          environment-file: pypy.yml
+          activate-environment: toil
+          channels: conda-forge
+          python-version: "3.9.*" # pypy is not yet compatible with 3.10 and 3.11
+
+      - name: Install toil[cwl]
+        run: pip install ".[cwl]"
