@@ -399,7 +399,8 @@ class SlurmBatchSystem(AbstractGridEngineBatchSystem):
             sbatch_line.append("--signal=B:INT@30")
 
             if gpus:
-                sbatch_line = sbatch_line[:1] + [f'--gres=gpu:{gpus}'] + sbatch_line[1:]
+                gres_line = [f'--gres=gpu:{gpus}'] if os.getenv('GRES_GPU') == 'True' else []
+                sbatch_line = sbatch_line[:1] + gres_line + sbatch_line[1:]
             environment = {}
             environment.update(self.boss.environment)
             if job_environment:
